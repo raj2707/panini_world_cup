@@ -1,4 +1,4 @@
-# Panini World Cup 2026 Sticker Tracker 🌍
+# Panini World Cup 2026 Sticker Tracker 
 
 A web app to track your Panini World Cup 2026 sticker collection.
 
