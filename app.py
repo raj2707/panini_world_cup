@@ -1,56 +1,77 @@
 import streamlit as st
 import json
-import os
+from supabase import create_client
 
-# All the stickers
+# --- Conexiune Supabase ---
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_KEY"]
+supabase = create_client(url, key)
+
+st.write(url)
+
+# --- Citim stickerele ---
 with open("stickere.json", "r", encoding="utf-8") as f:
-    stickers_data = json.load(f)
+    stickere_data = json.load(f)
 
-# Progress
-FILE_PROGRESS = "progres.json"
+# --- Utilizator ---
+st.title("Catalog Panini WC 2026 🌍")
 
-if os.path.exists(FILE_PROGRESS):
-    with open(FILE_PROGRESS, "r") as f:
-        progress = json.load(f)
-else:
-    progress = {}
+utilizator = st.text_input("Numele tău:", placeholder="ex: raj")
 
-#Interface
-st.title("Panini WC 2026 ")
+if not utilizator:
+    st.info("Introdu numele tău ca să îți încarc progresul.")
+    st.stop()
 
-sticker_filter = st.radio("Show: ", ["All", "Have", "Missing"], horizontal = True)
+# --- Citim progresul din Supabase ---
+rezultat = supabase.table("progres").select("*").eq("utilizator", utilizator).execute()
+progres = {row["cod_sticker"]: row["colectat"] for row in rezultat.data}
 
-total_stickers = 0
-total_collected = 0
+# --- Filtru ---
+filtru = st.radio("Afișează:", ["Toate", "Am", "Îmi lipsesc"], horizontal=True)
 
-for team, stickers in stickers_data.items():
-    st.subheader(team)
+# --- Afișare stickere ---
+total_stickere = 0
+total_colectate = 0
+modificari = []
+
+for echipa, stickere in stickere_data.items():
+    st.subheader(echipa)
     cols = st.columns(4)
     col_idx = 0
 
-    for cod in stickers:
-        check = progress.get(cod, False)
+    for cod in stickere:
+        valoare_curenta = progres.get(cod, False)
 
-        if sticker_filter == "Have" and not check:
+        if filtru == "Am" and not valoare_curenta:
+            total_stickere += 1
             continue
-        if sticker_filter == "Missing" and check:
+        if filtru == "Îmi lipsesc" and valoare_curenta:
+            total_stickere += 1
+            if valoare_curenta:
+                total_colectate += 1
             continue
 
-        if cod not in progress:
-            progress[cod] = False
         with cols[col_idx % 4]:
-            new_check = st.checkbox(cod, value=progress[cod], key=cod)
-            progress[cod] = new_check
-            if new_check:
-                total_collected += 1
+            bifare_noua = st.checkbox(cod, value=valoare_curenta, key=cod)
+
+        if bifare_noua != valoare_curenta:
+            modificari.append({
+                "utilizator": utilizator,
+                "cod_sticker": cod,
+                "colectat": bifare_noua
+            })
+            progres[cod] = bifare_noua
+
+        if progres.get(cod, False):
+            total_colectate += 1
+
         col_idx += 1
-        total_stickers += 1
+        total_stickere += 1
 
+# --- Salvare modificari ---
+if modificari:
+    supabase.table("progres").upsert(modificari).execute()
 
-# Accccounting
+# --- Contor ---
 st.divider()
-st.metric("Total colectate", f"{total_collected} / {total_stickers}")
-
-# Saving the progress
-with open(FILE_PROGRESS, "w") as f:
-    json.dump(progress, f)
+st.metric("Total colectate", f"{total_colectate} / {total_stickere}")
