@@ -18,6 +18,8 @@ else:
 #Interface
 st.title("Panini WC 2026 ")
 
+sticker_filter = st.radio("Show: ", ["All", "Have", "Missing"], horizontal = True)
+
 total_stickers = 0
 total_collected = 0
 
@@ -27,12 +29,19 @@ for team, stickers in stickers_data.items():
     col_idx = 0
 
     for cod in stickers:
+        check = progress.get(cod, False)
+
+        if sticker_filter == "Have" and not check:
+            continue
+        if sticker_filter == "Missing" and check:
+            continue
+
         if cod not in progress:
             progress[cod] = False
         with cols[col_idx % 4]:
-            check = st.checkbox(cod, value=progress[cod], key=cod)
-            progress[cod] = check
-            if check:
+            new_check = st.checkbox(cod, value=progress[cod], key=cod)
+            progress[cod] = new_check
+            if new_check:
                 total_collected += 1
         col_idx += 1
         total_stickers += 1
