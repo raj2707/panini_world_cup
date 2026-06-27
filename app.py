@@ -7,7 +7,6 @@ url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
-st.write(url)
 
 # --- Citim stickerele ---
 with open("stickere.json", "r", encoding="utf-8") as f:
@@ -19,7 +18,7 @@ st.title("Catalog Panini WC 2026 🌍")
 utilizator = st.text_input("Numele tău:", placeholder="ex: raj")
 
 if not utilizator:
-    st.info("Introdu numele tău ca să îți încarc progresul.")
+    st.info("Introdu numele tău.")
     st.stop()
 
 # --- Citim progresul din Supabase ---
@@ -27,7 +26,7 @@ rezultat = supabase.table("progres").select("*").eq("utilizator", utilizator).ex
 progres = {row["cod_sticker"]: row["colectat"] for row in rezultat.data}
 
 # --- Filtru ---
-filtru = st.radio("Afișează:", ["Toate", "Am", "Îmi lipsesc"], horizontal=True)
+filtru = st.radio("Afișează:", ["All", "Owned", "Missing"], horizontal=True)
 
 # --- Afișare stickere ---
 total_stickere = 0
@@ -42,10 +41,10 @@ for echipa, stickere in stickere_data.items():
     for cod in stickere:
         valoare_curenta = progres.get(cod, False)
 
-        if filtru == "Am" and not valoare_curenta:
+        if filtru == "Owned" and not valoare_curenta:
             total_stickere += 1
             continue
-        if filtru == "Îmi lipsesc" and valoare_curenta:
+        if filtru == "Missing" and valoare_curenta:
             total_stickere += 1
             if valoare_curenta:
                 total_colectate += 1
