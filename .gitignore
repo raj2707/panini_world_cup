@@ -35,3 +35,7 @@ dist/
 
 # Streamlit secrets
 .streamlit/secrets.toml
+
+
+#progres
+progres.json
