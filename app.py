@@ -26,7 +26,7 @@ rezultat = supabase.table("progres").select("*").eq("utilizator", utilizator).ex
 progres = {row["cod_sticker"]: row["colectat"] for row in rezultat.data}
 
 # --- Filtru ---
-filtru = st.radio("Afișează:", ["All", "Owned", "Missing"], horizontal=True)
+filtru = st.radio("Afișează:", ["All", "Collected", "Missing"], horizontal=True)
 
 # --- Afișare stickere ---
 total_stickere = 0
@@ -41,7 +41,7 @@ for echipa, stickere in stickere_data.items():
     for cod in stickere:
         valoare_curenta = progres.get(cod, False)
 
-        if filtru == "Owned" and not valoare_curenta:
+        if filtru == "Collected" and not valoare_curenta:
             total_stickere += 1
             continue
         if filtru == "Missing" and valoare_curenta:
