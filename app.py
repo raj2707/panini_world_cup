@@ -75,4 +75,5 @@ if modificari:
 # --- Contor ---
 st.divider()
 st.metric("Total colectate", f"{total_colectate} / {total_stickere}")
-st.metric("Procentaj", f"{100} * {total_stickere} / {total_colectate}")
+procent = round((total_colectate / total_stickere) * 100, 1)
+st.metric("Progres", f"{procent}%")
