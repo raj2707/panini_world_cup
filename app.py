@@ -33,39 +33,40 @@ total_stickere = 0
 total_colectate = 0
 modificari = []
 
+
 for echipa, stickere in stickere_data.items():
-    st.subheader(echipa)
-    cols = st.columns(4)
-    col_idx = 0
+    with st.expander(echipa):
+        cols = st.columns(4)
+        col_idx = 0
 
-    for cod in stickere:
-        valoare_curenta = progres.get(cod, False)
+        for cod in stickere:
+            valoare_curenta = progres.get(cod, False)
 
-        if filtru == "Collected" and not valoare_curenta:
-            total_stickere += 1
-            continue
-        if filtru == "Missing" and valoare_curenta:
-            total_stickere += 1
-            if valoare_curenta:
+            if filtru == "Collected" and not valoare_curenta:
+                total_stickere += 1
+                continue
+            if filtru == "Missing" and valoare_curenta:
+                total_stickere += 1
+                if valoare_curenta:
+                    total_colectate += 1
+                continue
+
+            with cols[col_idx % 4]:
+                bifare_noua = st.checkbox(cod, value=valoare_curenta, key=cod)
+
+            if bifare_noua != valoare_curenta:
+                modificari.append({
+                    "utilizator": utilizator,
+                    "cod_sticker": cod,
+                    "colectat": bifare_noua
+                })
+                progres[cod] = bifare_noua
+
+            if progres.get(cod, False):
                 total_colectate += 1
-            continue
 
-        with cols[col_idx % 4]:
-            bifare_noua = st.checkbox(cod, value=valoare_curenta, key=cod)
-
-        if bifare_noua != valoare_curenta:
-            modificari.append({
-                "utilizator": utilizator,
-                "cod_sticker": cod,
-                "colectat": bifare_noua
-            })
-            progres[cod] = bifare_noua
-
-        if progres.get(cod, False):
-            total_colectate += 1
-
-        col_idx += 1
-        total_stickere += 1
+            col_idx += 1
+            total_stickere += 1
 
 # --- Salvare modificari ---
 if modificari:
